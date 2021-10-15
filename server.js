@@ -3,6 +3,20 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt-nodejs');
 const cors = require('cors');
 
+const PASS = require('./password.js');
+
+const knex = require('knex');
+
+const db = knex({
+  client: 'pg',
+  connection: {
+    host: '127.0.0.1',
+    user: 'postgres',
+    password: PASS,
+    database: 'smart-brain',
+  },
+});
+
 const app = express();
 
 // important for the req.body
@@ -15,7 +29,7 @@ const database = {
       id: '123',
       name: 'kronos',
       email: 'kronos@example.com',
-      password: '123456',
+      password: '12',
       entries: 0,
       joined: new Date(),
     },
@@ -38,7 +52,7 @@ app.post('/signin', (req, res) => {
     req.body.email === database.users[0].email &&
     req.body.password === database.users[0].password
   ) {
-    res.json('success');
+    res.json(database.users[0]);
   } else {
     res.status(400).json('error logging in');
   }
@@ -46,15 +60,17 @@ app.post('/signin', (req, res) => {
 
 app.post('/register', (req, res) => {
   const { email, name, password } = req.body;
-  database.users.push({
-    id: '125',
-    name: name,
-    email: email,
-    password: password,
-    entries: 0,
-    joined: new Date(),
-  });
-  res.json(database.users);
+  db('users')
+    .returning('*')
+    .insert({
+      email: email,
+      name: name,
+      joined: new Date(),
+    })
+    .then((user) => {
+      res.json(user[0]);
+    })
+    .catch((err) => res.status(400).json('unable to register'));
 });
 
 app.get('/profile/:id', (req, res) => {
