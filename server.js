@@ -15,7 +15,7 @@ const { response } = require('express');
 const db = knex({
   client: 'pg',
   connection: {
-    host: '127.0.0.1',
+    host: 'postgresql-solid-96360',
     user: 'postgres',
     password: PASS,
     database: 'smart-brain',
@@ -52,7 +52,7 @@ app.post('/imageurl', (req, res) => {
   image.handleApiCall(req, res);
 });
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log('Server listening on port ' + PORT);
 });
